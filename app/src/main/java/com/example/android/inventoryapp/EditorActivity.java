@@ -173,160 +173,153 @@ public class EditorActivity extends AppCompatActivity implements
         if (mNameEditText.getText().toString().trim().equals("")) {
             Toast.makeText(context, R.string.name_required, Toast.LENGTH_SHORT).show();
             return false;
-        }
-        else if (mCurrentQuantity.getText().toString().trim().equals("")) {
+        } else if (mCurrentQuantity.getText().toString().trim().equals("")) {
             Toast.makeText(context, R.string.quantity_required, Toast.LENGTH_SHORT).show();
             return false;
 
-        }
-        else if (mPriceEditText.getText().toString().equals("")){
+        } else if (mPriceEditText.getText().toString().equals("")) {
             Toast.makeText(context, R.string.price_required, Toast.LENGTH_SHORT).show();
             return false;
-        }
-
-        else if (mCurrentImage.getDrawable() == null){
+        } else if (mCurrentImage.getDrawable() == null) {
             Toast.makeText(context, R.string.image_required, Toast.LENGTH_SHORT).show();
             return false;
-        }
-        else {
+        } else {
             return true;
         }
     }
 
     private void saveItem() {
 
-            String nameString = mNameEditText.getText().toString().trim();
-            String descriptionString = mDescriptionEditText.getText().toString().trim();
-            String priceString = mPriceEditText.getText().toString().trim();
-            String quantityString = mCurrentQuantity.getText().toString();
-            String imageUriString = mImageUri.toString().trim();
+        String nameString = mNameEditText.getText().toString().trim();
+        String descriptionString = mDescriptionEditText.getText().toString().trim();
+        String priceString = mPriceEditText.getText().toString().trim();
+        String quantityString = mCurrentQuantity.getText().toString();
+        String imageUriString = mImageUri.toString().trim();
 
-            if (mCurrentItemUri == null &&
-                    TextUtils.isEmpty(nameString) && TextUtils.isEmpty(priceString) && TextUtils.isEmpty(quantityString)
-                    && TextUtils.isEmpty(imageUriString)) {
-                return;
-            }
+        if (mCurrentItemUri == null &&
+                TextUtils.isEmpty(nameString) && TextUtils.isEmpty(priceString) && TextUtils.isEmpty(quantityString)
+                && TextUtils.isEmpty(imageUriString)) {
+            return;
+        }
 
-            ContentValues values = new ContentValues();
-            values.put(ItemEntry.COLUMN_ITEM_NAME, nameString);
-            values.put(ItemEntry.COLUMN_ITEM_DESCRIPTION, descriptionString);
-            values.put(ItemEntry.COLUMN_ITEM_PRICE, priceString);
-            values.put(ItemEntry.COLUMN_ITEM_QUANTITY, quantityString);
-            values.put(ItemEntry.COLUMN_ITEM_IMAGE, imageUriString);
+        ContentValues values = new ContentValues();
+        values.put(ItemEntry.COLUMN_ITEM_NAME, nameString);
+        values.put(ItemEntry.COLUMN_ITEM_DESCRIPTION, descriptionString);
+        values.put(ItemEntry.COLUMN_ITEM_PRICE, priceString);
+        values.put(ItemEntry.COLUMN_ITEM_QUANTITY, quantityString);
+        values.put(ItemEntry.COLUMN_ITEM_IMAGE, imageUriString);
 
-            int price = 0;
-            if (!TextUtils.isEmpty(priceString)) {
-                price = Integer.parseInt(priceString);
-            }
-            values.put(ItemEntry.COLUMN_ITEM_PRICE, price);
+        int price = 0;
+        if (!TextUtils.isEmpty(priceString)) {
+            price = Integer.parseInt(priceString);
+        }
+        values.put(ItemEntry.COLUMN_ITEM_PRICE, price);
 
-            int quantity = 0;
-            if (!TextUtils.isEmpty(quantityString)) {
-                quantity = Integer.parseInt(quantityString);
-            }
-            values.put(ItemEntry.COLUMN_ITEM_QUANTITY, quantity);
+        int quantity = 0;
+        if (!TextUtils.isEmpty(quantityString)) {
+            quantity = Integer.parseInt(quantityString);
+        }
+        values.put(ItemEntry.COLUMN_ITEM_QUANTITY, quantity);
 
-            if (mCurrentItemUri == null) {
+        if (mCurrentItemUri == null) {
 
-                Uri newUri = getContentResolver().insert(ItemEntry.CONTENT_URI, values);
+            Uri newUri = getContentResolver().insert(ItemEntry.CONTENT_URI, values);
 
-                if (newUri == null) {
+            if (newUri == null) {
 
-                    Toast.makeText(this, getString(R.string.editor_insert_item_failed),
-                            Toast.LENGTH_SHORT).show();
-                } else {
-
-                    Toast.makeText(this, getString(R.string.editor_insert_item_successful),
-                            Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(this, getString(R.string.editor_insert_item_failed),
+                        Toast.LENGTH_SHORT).show();
             } else {
 
-                int rowsAffected = getContentResolver().update(mCurrentItemUri, values, null, null);
-
-                if (rowsAffected == 0) {
-
-                    Toast.makeText(this, getString(R.string.editor_insert_item_failed),
-                            Toast.LENGTH_SHORT).show();
-                } else {
-
-                    Toast.makeText(this, getString(R.string.editor_insert_item_successful),
-                            Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(this, getString(R.string.editor_insert_item_successful),
+                        Toast.LENGTH_SHORT).show();
             }
+        } else {
+
+            int rowsAffected = getContentResolver().update(mCurrentItemUri, values, null, null);
+
+            if (rowsAffected == 0) {
+
+                Toast.makeText(this, getString(R.string.editor_insert_item_failed),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+
+                Toast.makeText(this, getString(R.string.editor_insert_item_successful),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
 
-        @Override
-        public boolean onCreateOptionsMenu (Menu menu){
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
 
-            getMenuInflater().inflate(R.menu.menu_editor, menu);
-            return true;
+        getMenuInflater().inflate(R.menu.menu_editor, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        if (mCurrentItemUri == null) {
+            MenuItem menuItem = menu.findItem(R.id.action_delete);
+            menuItem.setVisible(false);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.action_save:
+                checkBeforeSaving(getApplicationContext());
+                if (checkBeforeSaving(getApplicationContext())) {
+                    saveItem();
+                    finish();
+                } else {
+                    return true;
+                }
+                return true;
+            case R.id.action_delete:
+                showDeleteConfirmationDialog();
+                return true;
+            case android.R.id.home:
+                if (!mItemHasChanged) {
+                    NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                    return true;
+                }
+
+                DialogInterface.OnClickListener discardButtonClickListener =
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                            }
+                        };
+                showUnsavedChangesDialog(discardButtonClickListener);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (!mItemHasChanged) {
+            super.onBackPressed();
+            return;
         }
 
-        @Override
-        public boolean onPrepareOptionsMenu (Menu menu){
-            super.onPrepareOptionsMenu(menu);
-            if (mCurrentItemUri == null) {
-                MenuItem menuItem = menu.findItem(R.id.action_delete);
-                menuItem.setVisible(false);
-            }
-            return true;
-        }
-
-        @Override
-        public boolean onOptionsItemSelected (MenuItem item){
-
-            switch (item.getItemId()) {
-                case R.id.action_save:
-                    checkBeforeSaving(getApplicationContext());
-                    if (checkBeforeSaving(getApplicationContext())) {
-                        saveItem();
+        DialogInterface.OnClickListener discardButtonClickListener =
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
                         finish();
                     }
-                    else
-                    {
-                        return true;
-                    }
-                    return true;
-                case R.id.action_delete:
-                    showDeleteConfirmationDialog();
-                    return true;
-                case android.R.id.home:
-                    if (!mItemHasChanged) {
-                        NavUtils.navigateUpFromSameTask(EditorActivity.this);
-                        return true;
-                    }
+                };
 
-                    DialogInterface.OnClickListener discardButtonClickListener =
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    NavUtils.navigateUpFromSameTask(EditorActivity.this);
-                                }
-                            };
-                    showUnsavedChangesDialog(discardButtonClickListener);
-                    return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
-
-        @Override
-        public void onBackPressed () {
-            if (!mItemHasChanged) {
-                super.onBackPressed();
-                return;
-            }
-
-            DialogInterface.OnClickListener discardButtonClickListener =
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            finish();
-                        }
-                    };
-
-            showUnsavedChangesDialog(discardButtonClickListener);
-        }
+        showUnsavedChangesDialog(discardButtonClickListener);
+    }
 
     public void composeEmail(String subject) {
         Intent intent = new Intent(Intent.ACTION_SENDTO);

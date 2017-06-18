@@ -62,16 +62,14 @@ public class ItemCursorAdapter extends CursorAdapter {
     private static int sellProduct(Context context, TextView current_quantity, int rowUpdated) {
         int availableQuantity = Integer.parseInt(current_quantity.getText().toString());
         int rowsUpdated = 0;
-        if (availableQuantity > 0){
-            availableQuantity = availableQuantity -1;
+        if (availableQuantity > 0) {
+            availableQuantity = availableQuantity - 1;
             String quantityToString = Integer.toString(availableQuantity);
             ContentValues values = new ContentValues();
             values.put(ItemContract.ItemEntry.COLUMN_ITEM_QUANTITY, quantityToString);
             Uri uri = ContentUris.withAppendedId(ItemContract.ItemEntry.CONTENT_URI, rowUpdated);
             rowsUpdated = context.getContentResolver().update(uri, values, null, null);
-        }
-
-        else {
+        } else {
             Toast.makeText(context, R.string.quantity_below_zero, Toast.LENGTH_SHORT).show();
         }
         return rowsUpdated;
